@@ -16,6 +16,9 @@
                     <span v-if="isDie()">已枯萎</span>
                 </div>
             </div>
+            <span class="plant-water" @click="water()">
+                <img src="water_small.png" />
+            </span>
             <img class="plant-image" v-if="state.showCompletePlantName || state.currentPlant.name" v-bind:src="getPlantImage()">
         </div>
     </div>
@@ -42,10 +45,19 @@
     }
     .plant-status {
         position: absolute;
-        left: 0;
-        bottom: 0;
+        left: 5px;
+        bottom: 5px;
     }
-
+    .plant-water {
+        position: absolute;
+        width: 50px;
+        right: 10px;
+        bottom: 10px;
+        cursor: pointer;
+    }
+    .plant-water img {
+        width: 100%;
+    }
     .plants > div {
         padding: 10px;
         border: 2px solid #a6e22e;
@@ -57,8 +69,8 @@
         padding: 5px;
         position: absolute;
         cursor: pointer;
-        top: 0;
-        right: 0;
+        top: 5px;
+        right: 5px;
     }
 </style>
 
@@ -171,7 +183,6 @@
                     };
                 }
             },
-
             // 过了一天
             dayPass: function () {
                 if (this.isFinished()) { // 植物已完成
@@ -187,6 +198,11 @@
                     this.state.currentPlant.dryDays++;
                 }
                 this.state.currentPlant.unWater = true; // 今天可以浇水了
+            },
+            // 浇水
+            water: function () {
+                this.state.currentPlant.unWater = false;
+                this.state.currentPlant.growDays++;
             }
         },
         created: function () {
