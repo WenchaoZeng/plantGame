@@ -85,7 +85,9 @@
         var minute = current.getMinutes();
         var second = current.getSeconds();
         var str = year + '-' + pad(month) + '-' + pad(day) + ' ' + pad(hour) + ':' + pad(minute) + ':' + pad(second);
-        return str;
+        var dateStr = str.substring(0, 10);
+        var tenTime = str.substring(0, 18);
+        return dateStr;
     }
 
     var app = new Vue({
