@@ -13,6 +13,7 @@
             <span class="plant-water" v-if="!isFinished() && !isDie() && state.currentPlant.unWater" @click="water()">
                 <img src="water_small.png" />
             </span>
+            <img class="plant-watering fade" src="watering.gif" />
             <img class="plant-image" v-if="state.showCompletePlantName || state.currentPlant.name" v-bind:src="getPlantImage()">
         </div>
     </div>
@@ -27,6 +28,16 @@
         text-align: center;
         color: white;
         background: black;
+    }
+
+    /* 渐入渐出效果 */
+    .fade {
+        opacity: 0;
+        -webkit-transition: opacity 1s;
+        transition: opacity 1s;
+    }
+    .fade.show {
+        opacity: 1;
     }
 
     .plants {
@@ -52,6 +63,12 @@
     .plant-water img {
         width: 100%;
     }
+    .plant-watering {
+        position: absolute;
+        width: 300px;
+        top: 100px;
+        left: 50%;
+    }
     .plants > div {
         padding: 10px;
         border: 2px solid #a6e22e;
@@ -68,6 +85,7 @@
     }
 </style>
 
+<script src="static/jquery-3.6.0.js"></script>
 <script src="static/vue2.js"></script>
 <script type="text/javascript">
     // 补零函数
@@ -87,7 +105,7 @@
         var str = year + '-' + pad(month) + '-' + pad(day) + ' ' + pad(hour) + ':' + pad(minute) + ':' + pad(second);
         var dateStr = str.substring(0, 10);
         var tenTime = str.substring(0, 18);
-        return dateStr;
+        return tenTime;
     }
 
     var app = new Vue({
@@ -207,13 +225,22 @@
             },
             // 浇水
             water: function () {
-                this.state.currentPlant.unWater = false;
-                this.state.currentPlant.growDays++;
-                this.state.currentPlant.dryDays = 0;
-                if (this.isFinished()) {
-                    this.state.completePlants.push(this.state.currentPlant.name);
+                var _this = this;
+                var afterWater = function () {
+                    _this.state.currentPlant.unWater = false;
+                    _this.state.currentPlant.growDays++;
+                    _this.state.currentPlant.dryDays = 0;
+                    if (_this.isFinished()) {
+                        _this.state.completePlants.push(_this.state.currentPlant.name);
+                    }
+                    _this.saveState();
                 }
-                this.saveState();
+
+                $('.plant-watering').addClass('show');
+                setTimeout(() => {
+                    $('.plant-watering').removeClass('show');
+                    setTimeout(afterWater, 1000)
+                }, 3000);
             }
         },
         created: function () {
