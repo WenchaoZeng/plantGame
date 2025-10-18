@@ -110,7 +110,7 @@
                     dryDays: 0,
                 },
                 showCompletePlantName: undefined,
-                lastDayStr: '',
+                lastDayStr: getTodayStr(),
             }
         },
         methods: {
@@ -118,6 +118,8 @@
                 var state = localStorage.getItem('state');
                 if (state) {
                     this.state = JSON.parse(state);
+                    this.state.showCompletePlantName = undefined;
+                    this.state.lastDayStr = getTodayStr();
                 }
             },
             saveState: function () {
@@ -166,7 +168,7 @@
                     return
                 }
 
-                // 取消显示已完成植物的模式
+                // 退出显示已完成植物的模式
                 this.state.showCompletePlantName = undefined;
 
                 // 如果当前植物已经死亡或者切换了植物, 则重新开始
@@ -178,14 +180,11 @@
                         growDays: 1,
                         dryDays: 0
                     };
+                    this.saveState();
                 }
             },
             // 过了一天
             dayPass: function () {
-                if (!this.state.lastDayStr) { // 打开应用当日不算
-                    this.state.lastDayStr = getTodayStr();
-                    return;
-                }
                 if (this.state.lastDayStr == getTodayStr()) { // 日期没变化
                     return;
                 }
@@ -202,6 +201,7 @@
                 }
                 if (this.state.currentPlant.unWater) { // 昨天未浇水: 增加一天的未浇水天数
                     this.state.currentPlant.dryDays++;
+                    this.saveState();
                 }
                 this.state.currentPlant.unWater = true; // 今天可以浇水了
             },
@@ -213,6 +213,7 @@
                 if (this.isFinished()) {
                     this.state.completePlants.push(this.state.currentPlant.name);
                 }
+                this.saveState();
             }
         },
         created: function () {
