@@ -110,6 +110,7 @@
                     dryDays: 0,
                 },
                 showCompletePlantName: undefined,
+                lastDayStr: '',
             }
         },
         methods: {
@@ -181,6 +182,15 @@
             },
             // 过了一天
             dayPass: function () {
+                if (!this.state.lastDayStr) { // 打开应用当日不算
+                    this.state.lastDayStr = getTodayStr();
+                    return;
+                }
+                if (this.state.lastDayStr == getTodayStr()) { // 日期没变化
+                    return;
+                }
+                this.state.lastDayStr = getTodayStr();
+
                 if (this.isFinished()) { // 植物已完成
                     return;
                 }
@@ -209,7 +219,7 @@
             this.loadState();
             setInterval(() => {
                 this.dayPass();
-            }, 60 * 1000);
+            }, 10 * 1000);
         },
     });
 </script>
