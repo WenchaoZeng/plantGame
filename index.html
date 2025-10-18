@@ -16,7 +16,7 @@
                     <span v-if="isDie()">已枯萎</span>
                 </div>
             </div>
-            <span class="plant-water" @click="water()">
+            <span class="plant-water" v-if="!isFinished()" @click="water()">
                 <img src="water_small.png" />
             </span>
             <img class="plant-image" v-if="state.showCompletePlantName || state.currentPlant.name" v-bind:src="getPlantImage()">
@@ -203,6 +203,9 @@
             water: function () {
                 this.state.currentPlant.unWater = false;
                 this.state.currentPlant.growDays++;
+                if (this.isFinished()) {
+                    this.state.completePlants.push(this.state.currentPlant.name);
+                }
             }
         },
         created: function () {
