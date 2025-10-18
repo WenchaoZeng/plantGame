@@ -10,13 +10,7 @@
     <div v-if="view === 'item'">
         <div class="open-list-button" @click="view = 'list'">···</div>
         <div class="plant">
-            <div class="plant-status" >
-                <span v-if="isFinished()">已养成</span>
-                <div v-if="!state.showCompletePlantName && state.currentPlant.name">
-                    <span v-if="isDie()">已枯萎</span>
-                </div>
-            </div>
-            <span class="plant-water" v-if="!isFinished()" @click="water()">
+            <span class="plant-water" v-if="!isFinished() && !isDie() && state.currentPlant.unWater" @click="water()">
                 <img src="water_small.png" />
             </span>
             <img class="plant-image" v-if="state.showCompletePlantName || state.currentPlant.name" v-bind:src="getPlantImage()">
@@ -109,7 +103,7 @@
                 completePlants: [],
                 currentPlant: {
                     name: '',
-                    unWater: true,
+                    unWater: false,
                     growDays: 0,
                     dryDays: 0,
                 },
@@ -203,6 +197,7 @@
             water: function () {
                 this.state.currentPlant.unWater = false;
                 this.state.currentPlant.growDays++;
+                this.state.currentPlant.dryDays = 0;
                 if (this.isFinished()) {
                     this.state.completePlants.push(this.state.currentPlant.name);
                 }
@@ -212,7 +207,7 @@
             this.loadState();
             setInterval(() => {
                 this.dayPass();
-            }, 10 * 1000);
+            }, 60 * 1000);
         },
     });
 </script>
