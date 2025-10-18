@@ -1,0 +1,150 @@
+<meta charset="utf-8">
+<body class="black">
+<div id="app">
+    <div v-if="view === 'list'" class="plants">
+        <div v-for="plant in plants" @click="startPlant(plant)">
+            <span>{{plant.displayName}}</span>
+            <span v-if="state.completePlants.includes(plant.name)">: 已养成</span>
+        </div>
+    </div>
+    <div v-if="view === 'item'">
+        <div class="open-list-button" @click="view = 'list'">···</div>
+        <div class="plant">
+            <div class="plant-status" v-if="isFinished()">已养成</div>
+            <img class="plant-image" v-if="state.showCompletePlantName || state.currentPlant.name" v-bind:src="getPlantImage()">
+        </div>
+    </div>
+</div>
+</body>
+
+<style type="text/css">
+    body {
+        margin: 0;
+        padding: 0;
+        font-family: "Arial";
+        text-align: center;
+        color: white;
+        background: black;
+    }
+
+    .plants {
+        width: 300px;
+        margin: 10px auto;
+    }
+
+    .plant-image {
+        height: 100%;
+    }
+    .plant-status {
+        position: absolute;
+        left: 0;
+        bottom: 0;
+    }
+
+    .plants > div {
+        padding: 10px;
+        border: 2px solid #a6e22e;
+        cursor: pointer;
+    }
+
+    .open-list-button {
+        width: 50px;
+        padding: 5px;
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        right: 0;
+    }
+</style>
+
+<script src="static/vue2.js"></script>
+<script type="text/javascript">
+    var app = new Vue({
+        el: '#app',
+        data: {
+            view: 'item',
+            plants: [
+                {
+                    name: 'tomato',
+                    displayName: '番茄 Tomato',
+                    days: 23,
+                },
+            ],
+            state: {
+                completePlants: [],
+                currentPlant: {
+                    name: '',
+                    growDays: 0,
+                    dryDays: 0,
+                },
+                showCompletePlantName: undefined,
+            }
+        },
+        methods: {
+            loadState: function () {
+                var state = localStorage.getItem('state');
+                if (state) {
+                    this.state = JSON.parse(state);
+                }
+            },
+            saveState: function () {
+                localStorage.setItem('state', JSON.stringify(this.state));
+            },
+            isDie: function () {
+                return this.state.currentPlant.dryDays >= 5;
+            },
+            isFinished: function () {
+                return this.state.showCompletePlantName || this.state.currentPlant.growDays >= this.state.currentPlant.totalDays;
+            },
+            getPlantDisplayName: function () {
+                var name = this.state.showCompletePlantName ? this.state.showCompletePlantName : this.state.currentPlant.name;
+                if (!name) {
+                    return '';
+                }
+                for (let plant of this.plants) {
+                    if (plant.name == name) {
+                        return plant.displayName;
+                    }
+                }
+            },
+            getPlantImage: function () {
+                var name = this.state.showCompletePlantName ? this.state.showCompletePlantName : this.state.currentPlant.name;
+                var days = this.state.currentPlant.growDays;
+                if (this.state.showCompletePlantName) {
+                    for (let plant of this.plants) {
+                        if (plant.name == name) {
+                            days = plant.days;
+                        }
+                    }
+                }
+                var dayStr = days < 10 ? '0' + days : days;
+                return name + '/' + dayStr + '.png';
+            },
+            startPlant: function (plant) {
+                this.view = 'item';
+
+                // 已经完成, 提供临时显示的功能
+                if (this.state.completePlants.includes(plant.name)) {
+                    this.state.showCompletePlantName = plant.name;
+                    return
+                }
+
+                // 取消显示已完成植物的模式
+                this.state.showCompletePlantName = undefined;
+
+                // 如果当前植物已经死亡或者切换了植物, 则重新开始
+                if (this.state.currentPlant.name != plant.name || this.isDie()) {
+                    this.state.currentPlant = {
+                        name: plant.name,
+                        totalDays: plant.days,
+                        growDays: 1,
+                        dryDays: 0
+                    };
+                }
+            },
+        },
+        created: function () {
+            this.loadState();
+        },
+    });
+</script>
