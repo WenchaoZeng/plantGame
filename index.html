@@ -10,7 +10,12 @@
     <div v-if="view === 'item'">
         <div class="open-list-button" @click="view = 'list'">···</div>
         <div class="plant">
-            <div class="plant-status" v-if="isFinished()">已养成</div>
+            <div class="plant-status" >
+                <span v-if="isFinished()">已养成</span>
+                <div v-if="!state.showCompletePlantName && state.currentPlant.name">
+                    <span v-if="isDie()">已枯萎</span>
+                </div>
+            </div>
             <img class="plant-image" v-if="state.showCompletePlantName || state.currentPlant.name" v-bind:src="getPlantImage()">
         </div>
     </div>
@@ -59,6 +64,24 @@
 
 <script src="static/vue2.js"></script>
 <script type="text/javascript">
+    // 补零函数
+    function pad(n) {
+        return n < 10 ? '0' + n : n;
+    }
+
+    // 获取当期日期字符串
+    function getTodayStr() {
+        var current = new Date();
+        var year = current.getFullYear();
+        var month = current.getMonth() + 1;
+        var day = current.getDate();
+        var hour = current.getHours();
+        var minute = current.getMinutes();
+        var second = current.getSeconds();
+        var str = year + '-' + pad(month) + '-' + pad(day) + ' ' + pad(hour) + ':' + pad(minute) + ':' + pad(second);
+        return str;
+    }
+
     var app = new Vue({
         el: '#app',
         data: {
@@ -74,6 +97,7 @@
                 completePlants: [],
                 currentPlant: {
                     name: '',
+                    unWater: true,
                     growDays: 0,
                     dryDays: 0,
                 },
@@ -108,6 +132,11 @@
                 }
             },
             getPlantImage: function () {
+                // 已枯萎的情况直接返回枯萎的图片
+                if (!this.state.showCompletePlantName && this.state.currentPlant.name && this.isDie()) {
+                    return this.state.currentPlant.name + '/' + '00.png';
+                }
+
                 var name = this.state.showCompletePlantName ? this.state.showCompletePlantName : this.state.currentPlant.name;
                 var days = this.state.currentPlant.growDays;
                 if (this.state.showCompletePlantName) {
@@ -117,8 +146,7 @@
                         }
                     }
                 }
-                var dayStr = days < 10 ? '0' + days : days;
-                return name + '/' + dayStr + '.png';
+                return name + '/' + pad(days) + '.png';
             },
             startPlant: function (plant) {
                 this.view = 'item';
@@ -137,14 +165,35 @@
                     this.state.currentPlant = {
                         name: plant.name,
                         totalDays: plant.days,
+                        unWater: true,
                         growDays: 1,
                         dryDays: 0
                     };
                 }
             },
+
+            // 过了一天
+            dayPass: function () {
+                if (this.isFinished()) { // 植物已完成
+                    return;
+                }
+                if (!this.state.currentPlant.name) { // 未种植植物
+                    return;
+                }
+                if (this.isDie()) { // 植物已死亡
+                    return;
+                }
+                if (this.state.currentPlant.unWater) { // 昨天未浇水: 增加一天的未浇水天数
+                    this.state.currentPlant.dryDays++;
+                }
+                this.state.currentPlant.unWater = true; // 今天可以浇水了
+            }
         },
         created: function () {
             this.loadState();
+            setInterval(() => {
+                this.dayPass();
+            }, 10 * 1000);
         },
     });
 </script>
